@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seleccionar Números</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(to right, #D2B48C, #8B4513);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            color: #fff;
+        }
+        .container {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            color: #8B4513;
+            max-width: 400px;
+            margin: auto;
+        }
+        h1 {
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            font-size: 18px;
+            border: 2px solid #D2B48C;
+            border-radius: 10px;
+            background-color: #fff;
+            color: #8B4513;
+        }
+        select {
+            width: 100%;
+            height: 300px;
+            margin-bottom: 20px;
+            padding: 10px;
+            font-size: 18px;
+            border: 2px solid #D2B48C;
+            border-radius: 10px;
+            background-color: #fff;
+            color: #8B4513;
+            overflow-y: scroll;
+        }
+        .btn-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn-send {
+            background-color: #8B4513;
+            color: #fff;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin: 10px;
+            flex: 1 1 100%;
+            max-width: 200px;
+        }
+        .btn-send:hover {
+            background-color: #D2B48C;
+        }
+        .btn-action {
+            background-color: #A0522D;
+            font-size: 14px;
+            padding: 10px 20px;
+            max-width: 120px;
+            margin: 10px;
+            flex: 1 1 45%;
+        }
+        .btn-action:hover {
+            background-color: #D2B48C;
+        }
+        .btn-restore {
+            background-color: #5A3825;
+            font-size: 14px;
+            padding: 10px 20px;
+            max-width: 120px;
+            margin: 10px;
+            flex: 1 1 45%;
+        }
+        .btn-restore:hover {
+            background-color: #D2B48C;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Selecciona Números</h1>
+        <input type="text" id="name" placeholder="Ingresa tu nombre">
+        <select id="numbers" multiple>
+            <script>
+                const excludedNumbers = [4, 5, 6, 7];
+                for (let i = 1; i <= 600; i++) {
+                    if (!excludedNumbers.includes(i)) {
+                        document.write(`<option value="${i}">${i}</option>`);
+                    }
+                }
+            </script>
+        </select>
+        <div class="btn-container">
+            <button class="btn-send" onclick="sendMessage()">Enviar por WhatsApp</button>
+        </div>
+        <div class="btn-container">
+            <button class="btn-action btn-delete" onclick="requestPin(deleteSelectedNumbers)">Eliminar Seleccionados</button>
+            <button class="btn-restore btn-restore" onclick="requestPin(restoreSelectedNumbers)">Restaurar Seleccionados</button>
+            <button class="btn-restore btn-restore" onclick="requestPin(restoreAllNumbers)">Restaurar Todos</button>
+        </div>
+    </div>
+
+    <script>
+        const phoneNumber = '8441401064';
+        const pin = '0526';
+        let deletedNumbers = [];
+
+        function sendMessage() {
+            const name = document.getElementById('name').value;
+            const select = document.getElementById('numbers');
+            const selectedNumbers = Array.from(select.selectedOptions).map(option => option.value);
+            const numbersText = selectedNumbers.join(', ');
+            const message = `Hola soy ${name}\nEstos son mis boletos apartados: ${numbersText}`;
+            const whatsappURL = `https://wa.me/${8441401064}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappURL, '_blank');
+            deletedNumbers = [...new Set([...deletedNumbers, ...selectedNumbers.map(Number)])];
+            updateSelectOptions();
+        }
+
+        function updateSelectOptions() {
+            const select = document.getElementById('numbers');
+            Array.from(select.options).forEach(option => {
+                if (deletedNumbers.includes(Number(option.value))) {
+                    option.remove();
+                }
+            });
+        }
+
+        function requestPin(callback) {
+            const enteredPin = prompt("Ingrese el PIN de seguridad:");
+            if (enteredPin === pin) {
+                callback();
+            } else {
+                alert("PIN incorrecto.");
+            }
+        }
+
+        function deleteSelectedNumbers() {
+            const select = document.getElementById('numbers');
+            const selectedNumbers = Array.from(select.selectedOptions).map(option => option.value);
+            deletedNumbers = [...new Set([...deletedNumbers, ...selectedNumbers.map(Number)])];
+            updateSelectOptions();
+        }
+
+        function restoreSelectedNumbers() {
+            const select = document.getElementById('numbers');
+            const selectedNumbers = Array.from(select.selectedOptions).map(option => Number(option.value));
+            deletedNumbers = deletedNumbers.filter(num => !selectedNumbers.includes(num));
+            initialize();
+        }
+
+        function restoreAllNumbers() {
+            deletedNumbers = [];
+            initialize();
+        }
+
+        function initialize() {
+            const select = document.getElementById('numbers');
+            select.innerHTML = '';
+            for (let i = 1; i <= 600; i++) {
+                if (!excludedNumbers.includes(i) && !deletedNumbers.includes(i)) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = i;
+                    select.appendChild(option);
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', initialize);
+    </script>
+</body>
+</html>
+
